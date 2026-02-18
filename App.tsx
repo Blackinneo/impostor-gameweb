@@ -24,7 +24,7 @@ import { Colors } from '@constants/theme';
  */
 export default function App() {
   const [fontsLoaded] = useFonts({
-    Drowner: require('./Drowner - Free Version by Hainz Studio/Drowner - Free Version/OpenType-PS/Drowner-Free.otf'),
+    Drowner: require('./assets/fonts/Drowner-Free.otf'),
     Inter_400Regular,
     Inter_500Medium,
     Inter_700Bold,
