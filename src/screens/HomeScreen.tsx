@@ -13,11 +13,13 @@ import {
     SafeAreaView,
     StatusBar,
     ScrollView,
+    TouchableOpacity,
 } from 'react-native';
 import { Button } from '@components/Button';
 import { Card } from '@components/Card';
 import { Colors, FontSize, Spacing, Radius, FontFamily } from '@constants/theme';
 import { generateGameCode } from '@utils/index';
+import { useFirebaseAuth } from '@hooks/useFirebaseAuth';
 
 // ─────────────────────────────────────────────
 // Component
@@ -27,13 +29,14 @@ import { generateGameCode } from '@utils/index';
  * Home screen — lets players create a new game or join an existing one.
  */
 export const HomeScreen: React.FC = () => {
+    const { logout, user } = useFirebaseAuth();
     const [joinCode, setJoinCode] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleCreateGame = async () => {
         setLoading(true);
         const code = generateGameCode();
-        // TODO: Create game session in Supabase and navigate to Lobby
+        // TODO: Create game session in Firebase and navigate to Lobby
         console.log('Creating game with code:', code);
         setLoading(false);
     };
@@ -55,9 +58,13 @@ export const HomeScreen: React.FC = () => {
             >
                 {/* ── Header ── */}
                 <View style={styles.header}>
+                    <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
+                        <Text style={styles.logoutText}>Salir</Text>
+                    </TouchableOpacity>
                     <Text style={styles.emoji}>🕵️</Text>
-                    <Text style={styles.title}>Impostor</Text>
-                    <Text style={styles.subtitle}>Who's the impostor among you?</Text>
+                    <Text style={styles.title}>IMPOSTOR</Text>
+                    <Text style={styles.welcome}>Hola, {user?.displayName || 'Agente'}</Text>
+                    <Text style={styles.subtitle}>¿Quién es el impostor entre nosotros?</Text>
                 </View>
 
                 {/* ── Create Game ── */}
@@ -124,6 +131,19 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: Spacing.xl,
         paddingTop: Spacing.xl,
+        position: 'relative',
+        width: '100%',
+    },
+    logoutBtn: {
+        position: 'absolute',
+        top: Spacing.md,
+        right: 0,
+        padding: Spacing.sm,
+    },
+    logoutText: {
+        color: Colors.primaryLight,
+        fontSize: FontSize.sm,
+        fontFamily: FontFamily.interBold,
     },
     emoji: {
         fontSize: 64,
@@ -131,14 +151,21 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: FontSize.hero,
-        fontWeight: '900',
+        fontFamily: FontFamily.drowner,
         color: Colors.textPrimary,
-        letterSpacing: -1,
+        letterSpacing: 4,
+    },
+    welcome: {
+        fontSize: FontSize.lg,
+        fontFamily: FontFamily.interBold,
+        color: Colors.textPrimary,
+        marginTop: Spacing.md,
     },
     subtitle: {
-        fontSize: FontSize.md,
+        fontSize: FontSize.sm,
         color: Colors.textSecondary,
         marginTop: Spacing.xs,
+        textAlign: 'center',
     },
     card: {
         marginBottom: Spacing.lg,
@@ -159,7 +186,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.surfaceElevated,
         borderRadius: Radius.md,
         borderWidth: 1,
-        borderColor: Colors.border,
+        borderColor: Colors.glassBorder,
         color: Colors.textPrimary,
         fontSize: FontSize.xl,
         fontWeight: '700',

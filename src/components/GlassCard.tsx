@@ -4,9 +4,9 @@
  * Replica el efecto de cristal con borde de luz superior e izquierdo.
  */
 
-import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
-import { Colors, Radius } from '@constants/theme';
+import { BlurView } from 'expo-blur';
+import { Radius } from '@constants/theme';
 
 interface GlassCardProps {
     children: React.ReactNode;
@@ -16,7 +16,7 @@ interface GlassCardProps {
 }
 
 /**
- * Contenedor glassmorphism con borde de luz y fondo translúcido.
+ * Contenedor glassmorphism con borde de luz y fondo translúcido con desenfoque.
  *
  * @example
  * <GlassCard intensity="medium">
@@ -30,29 +30,39 @@ export const GlassCard: React.FC<GlassCardProps> = ({
 }) => {
     const bgOpacity = intensity === 'subtle' ? 0.03 : intensity === 'medium' ? 0.06 : 0.1;
     const borderOpacity = intensity === 'subtle' ? 0.1 : intensity === 'medium' ? 0.18 : 0.28;
+    const blurIntensity = intensity === 'subtle' ? 10 : intensity === 'medium' ? 25 : 45;
 
     return (
         <View
             style={[
-                styles.card,
+                styles.container,
                 {
-                    backgroundColor: `rgba(255, 255, 255, ${bgOpacity})`,
                     borderColor: `rgba(255, 255, 255, ${borderOpacity})`,
                 },
                 style,
             ]}
         >
+            <BlurView
+                intensity={blurIntensity}
+                tint="dark"
+                style={[
+                    StyleSheet.absoluteFill,
+                    { backgroundColor: `rgba(255, 255, 255, ${bgOpacity})` },
+                ]}
+            />
             {/* Borde de luz superior (reflejo de cristal) */}
             <View style={styles.lightBorderTop} />
             {/* Borde de luz izquierdo */}
             <View style={styles.lightBorderLeft} />
-            {children}
+            <View style={styles.content}>
+                {children}
+            </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    card: {
+    container: {
         borderRadius: Radius.lg,
         borderWidth: 1,
         overflow: 'hidden',
@@ -75,5 +85,8 @@ const styles = StyleSheet.create({
         width: 1,
         backgroundColor: 'rgba(255, 255, 255, 0.15)',
         zIndex: 1,
+    },
+    content: {
+        zIndex: 2,
     },
 });

@@ -5,7 +5,14 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { signInWithGoogle, signOut, onAuthChange, type User } from '@services/firebase';
+import {
+    signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
+    signOut,
+    onAuthChange,
+    type User
+} from '@services/firebase';
 
 // ─────────────────────────────────────────────
 // Types
@@ -25,6 +32,10 @@ interface FirebaseAuthState {
 interface FirebaseAuthActions {
     /** Iniciar sesión con Google */
     loginWithGoogle: () => Promise<void>;
+    /** Iniciar sesión con Email/Password */
+    loginWithEmail: (email: string, password: string) => Promise<void>;
+    /** Crear cuenta con Email/Password */
+    registerWithEmail: (email: string, password: string, displayName: string) => Promise<void>;
     /** Cerrar sesión */
     logout: () => Promise<void>;
     /** Limpiar error */
@@ -64,10 +75,35 @@ export function useFirebaseAuth(): FirebaseAuthState & FirebaseAuthActions {
             await signInWithGoogle();
         } catch (e: unknown) {
             const msg = e instanceof Error ? e.message : 'Error al iniciar sesión con Google';
-            // Ignorar cancelación del popup por el usuario
             if (!msg.includes('popup-closed-by-user')) {
                 setError(msg);
             }
+        } finally {
+            setActionLoading(false);
+        }
+    }, []);
+
+    // ── Login con Email ──────────────────────────
+    const loginWithEmail = useCallback(async (email: string, password: string) => {
+        setError(null);
+        setActionLoading(true);
+        try {
+            await signInWithEmail(email, password);
+        } catch (e: unknown) {
+            setError(e instanceof Error ? e.message : 'Error al iniciar sesión');
+        } finally {
+            setActionLoading(false);
+        }
+    }, []);
+
+    // ── Registro con Email ───────────────────────
+    const registerWithEmail = useCallback(async (email: string, password: string, displayName: string) => {
+        setError(null);
+        setActionLoading(true);
+        try {
+            await signUpWithEmail(email, password, displayName);
+        } catch (e: unknown) {
+            setError(e instanceof Error ? e.message : 'Error al crear cuenta');
         } finally {
             setActionLoading(false);
         }
@@ -88,5 +124,15 @@ export function useFirebaseAuth(): FirebaseAuthState & FirebaseAuthActions {
 
     const clearError = useCallback(() => setError(null), []);
 
-    return { user, loading, actionLoading, error, loginWithGoogle, logout, clearError };
+    return {
+        user,
+        loading,
+        actionLoading,
+        error,
+        loginWithGoogle,
+        loginWithEmail,
+        registerWithEmail,
+        logout,
+        clearError
+    };
 }

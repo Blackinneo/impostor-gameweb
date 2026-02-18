@@ -1,10 +1,10 @@
 /**
  * @file src/screens/LoginScreen.tsx
- * @description Pantalla de Login con Google — Identidad Visual Impostor GameWeb.
+ * @description Pantalla de Login/Register — Identidad Visual Impostor GameWeb.
  * Glassmorphism + fondo rojo/negro + animaciones premium + fuente DROWNER.
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     View,
     Text,
@@ -16,7 +16,10 @@ import {
     TouchableOpacity,
     ActivityIndicator,
     Dimensions,
+    TextInput,
+    KeyboardAvoidingView,
     Platform,
+    ScrollView,
 } from 'react-native';
 import { GlassCard } from '@components/GlassCard';
 import { useFirebaseAuth } from '@hooks/useFirebaseAuth';
@@ -24,16 +27,25 @@ import { Colors, FontFamily, FontSize, Spacing, Radius, Duration } from '@consta
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 
-// ─────────────────────────────────────────────
-// Component
-// ─────────────────────────────────────────────
-
 /**
  * Pantalla principal de autenticación.
- * Muestra el logo DROWNER, fondo animado con focos rojos y botón Google.
+ * Gestiona Login y Registro con Google o Email/Password.
  */
 export const LoginScreen: React.FC = () => {
-    const { loginWithGoogle, actionLoading, error } = useFirebaseAuth();
+    const {
+        loginWithGoogle,
+        loginWithEmail,
+        registerWithEmail,
+        actionLoading,
+        error,
+        clearError
+    } = useFirebaseAuth();
+
+    // ── Estado ──────────────────────────────────
+    const [mode, setMode] = useState<'login' | 'register'>('login');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [displayName, setDisplayName] = useState('');
 
     // ── Animaciones ──────────────────────────────
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -117,6 +129,20 @@ export const LoginScreen: React.FC = () => {
         ).start();
     }, []);
 
+    const toggleMode = () => {
+        const nextMode = mode === 'login' ? 'register' : 'login';
+        clearError();
+        setMode(nextMode);
+    };
+
+    const handleAuth = async () => {
+        if (mode === 'login') {
+            await loginWithEmail(email, password);
+        } else {
+            await registerWithEmail(email, password, displayName);
+        }
+    };
+
     // Pulse del botón al presionar
     const handlePressIn = () => {
         Animated.spring(pulseAnim, {
@@ -139,7 +165,6 @@ export const LoginScreen: React.FC = () => {
 
             {/* ── Fondo: orbs rojos animados ── */}
             <View style={StyleSheet.absoluteFill} pointerEvents="none">
-                {/* Orb principal — centro-superior */}
                 <Animated.View
                     style={[
                         styles.orb,
@@ -147,7 +172,6 @@ export const LoginScreen: React.FC = () => {
                         { opacity: glowAnim, transform: [{ translateY: orb1Anim }] },
                     ]}
                 />
-                {/* Orb secundario — inferior-derecho */}
                 <Animated.View
                     style={[
                         styles.orb,
@@ -155,7 +179,6 @@ export const LoginScreen: React.FC = () => {
                         { opacity: glowAnim, transform: [{ translateY: orb2Anim }] },
                     ]}
                 />
-                {/* Orb terciario — superior-izquierdo */}
                 <Animated.View
                     style={[
                         styles.orb,
@@ -165,98 +188,143 @@ export const LoginScreen: React.FC = () => {
                 />
             </View>
 
-            {/* ── Contenido principal ── */}
-            <Animated.View
-                style={[
-                    styles.container,
-                    {
-                        opacity: fadeAnim,
-                        transform: [{ translateY: slideAnim }],
-                    },
-                ]}
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                style={{ flex: 1 }}
             >
-                {/* ── Logo / Título ── */}
-                <View style={styles.logoSection}>
-                    {/* Ícono del juego */}
-                    <View style={styles.iconWrapper}>
-                        <GlassCard intensity="strong" style={styles.iconCard}>
-                            <Text style={styles.iconEmoji}>🕵️</Text>
-                        </GlassCard>
-                    </View>
-
-                    {/* Título DROWNER */}
-                    <Text style={styles.title}>IMPOSTOR</Text>
-                    <Text style={styles.subtitle}>GAME</Text>
-
-                    {/* Tagline */}
-                    <Text style={styles.tagline}>¿Quién es el impostor entre ustedes?</Text>
-                </View>
-
-                {/* ── Card de Login ── */}
-                <GlassCard intensity="medium" style={styles.loginCard}>
-                    <Text style={styles.loginTitle}>Iniciar Sesión</Text>
-                    <Text style={styles.loginDesc}>
-                        Usá tu cuenta de Google para entrar al juego
-                    </Text>
-
-                    {/* Error */}
-                    {error ? (
-                        <View style={styles.errorBadge}>
-                            <Text style={styles.errorText}>⚠️ {error}</Text>
-                        </View>
-                    ) : null}
-
-                    {/* Botón Google */}
-                    <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-                        <TouchableOpacity
-                            style={[styles.googleButton, actionLoading && styles.googleButtonLoading]}
-                            onPress={loginWithGoogle}
-                            onPressIn={handlePressIn}
-                            onPressOut={handlePressOut}
-                            disabled={actionLoading}
-                            activeOpacity={1}
-                        >
-                            {actionLoading ? (
-                                <ActivityIndicator color={Colors.background} size="small" />
-                            ) : (
-                                <>
-                                    {/* Google Icon SVG-like */}
-                                    <View style={styles.googleIconWrapper}>
-                                        <Text style={styles.googleIconText}>G</Text>
-                                    </View>
-                                    <Text style={styles.googleButtonText}>Continuar con Google</Text>
-                                </>
-                            )}
-                        </TouchableOpacity>
-                    </Animated.View>
-
-                    {/* Divider */}
-                    <View style={styles.divider}>
-                        <View style={styles.dividerLine} />
-                        <Text style={styles.dividerText}>Seguro y privado</Text>
-                        <View style={styles.dividerLine} />
-                    </View>
-
-                    {/* Features */}
-                    <View style={styles.features}>
-                        {[
-                            { icon: '🔒', text: 'Sin contraseñas' },
-                            { icon: '⚡', text: 'Acceso instantáneo' },
-                            { icon: '🎮', text: 'Perfil de jugador' },
-                        ].map((f) => (
-                            <View key={f.text} style={styles.featureItem}>
-                                <Text style={styles.featureIcon}>{f.icon}</Text>
-                                <Text style={styles.featureText}>{f.text}</Text>
+                <ScrollView
+                    contentContainerStyle={styles.scrollContent}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                >
+                    {/* ── Contenido principal ── */}
+                    <Animated.View
+                        style={[
+                            styles.container,
+                            {
+                                opacity: fadeAnim,
+                                transform: [{ translateY: slideAnim }],
+                            },
+                        ]}
+                    >
+                        {/* ── Logo / Título ── */}
+                        <View style={styles.logoSection}>
+                            <View style={styles.iconWrapper}>
+                                <GlassCard intensity="strong" style={styles.iconCard}>
+                                    <Text style={styles.iconEmoji}>🕵️</Text>
+                                </GlassCard>
                             </View>
-                        ))}
-                    </View>
-                </GlassCard>
 
-                {/* ── Footer ── */}
-                <Text style={styles.footer}>
-                    Al continuar aceptás los Términos de Servicio
-                </Text>
-            </Animated.View>
+                            <Text style={styles.title}>IMPOSTOR</Text>
+                            <Text style={styles.subtitle}>GAME</Text>
+                        </View>
+
+                        {/* ── Card de Auth ── */}
+                        <GlassCard intensity="medium" style={styles.loginCard}>
+                            <Text style={styles.loginTitle}>
+                                {mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}
+                            </Text>
+                            <Text style={styles.loginDesc}>
+                                {mode === 'login'
+                                    ? 'Entrá para descubrir al impostor'
+                                    : 'Unite a la partida secreta'}
+                            </Text>
+
+                            {/* Error */}
+                            {error ? (
+                                <View style={styles.errorBadge}>
+                                    <Text style={styles.errorText}>⚠️ {error}</Text>
+                                </View>
+                            ) : null}
+
+                            {/* Inputs */}
+                            <View style={styles.inputsWrapper}>
+                                {mode === 'register' && (
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Nombre de Jugador"
+                                        placeholderTextColor={Colors.textDisabled}
+                                        value={displayName}
+                                        onChangeText={setDisplayName}
+                                        autoCapitalize="words"
+                                    />
+                                )}
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Email"
+                                    placeholderTextColor={Colors.textDisabled}
+                                    value={email}
+                                    onChangeText={setEmail}
+                                    keyboardType="email-address"
+                                    autoCapitalize="none"
+                                />
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Contraseña"
+                                    placeholderTextColor={Colors.textDisabled}
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    secureTextEntry
+                                />
+                            </View>
+
+                            {/* Botón Principal */}
+                            <Animated.View style={{ transform: [{ scale: pulseAnim }], marginTop: Spacing.md }}>
+                                <TouchableOpacity
+                                    style={[styles.primaryButton, actionLoading && styles.buttonLoading]}
+                                    onPress={handleAuth}
+                                    onPressIn={handlePressIn}
+                                    onPressOut={handlePressOut}
+                                    disabled={actionLoading}
+                                    activeOpacity={1}
+                                >
+                                    {actionLoading ? (
+                                        <ActivityIndicator color={Colors.white} size="small" />
+                                    ) : (
+                                        <Text style={styles.primaryButtonText}>
+                                            {mode === 'login' ? 'ENTRAR' : 'REGISTRARME'}
+                                        </Text>
+                                    )}
+                                </TouchableOpacity>
+                            </Animated.View>
+
+                            <TouchableOpacity onPress={toggleMode} style={styles.modeToggle}>
+                                <Text style={styles.modeToggleText}>
+                                    {mode === 'login'
+                                        ? '¿No tenés cuenta? Registrate'
+                                        : '¿Ya tenés cuenta? Iniciá sesión'}
+                                </Text>
+                            </TouchableOpacity>
+
+                            {/* Divider */}
+                            <View style={styles.divider}>
+                                <View style={styles.dividerLine} />
+                                <Text style={styles.dividerText}>o también</Text>
+                                <View style={styles.dividerLine} />
+                            </View>
+
+                            {/* Botón Google */}
+                            <TouchableOpacity
+                                style={styles.googleButton}
+                                onPress={loginWithGoogle}
+                                disabled={actionLoading}
+                            >
+                                <View style={styles.googleIconWrapper}>
+                                    <View style={styles.googleG}>
+                                        <Text style={styles.googleGText}>G</Text>
+                                    </View>
+                                </View>
+                                <Text style={styles.googleButtonText}>Continuar con Google</Text>
+                            </TouchableOpacity>
+                        </GlassCard>
+
+                        {/* ── Footer ── */}
+                        <Text style={styles.footer}>
+                            Hecho con ❤️ por el equipo de Impostor
+                        </Text>
+                    </Animated.View>
+                </ScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };
@@ -270,6 +338,11 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: Colors.background,
     },
+    scrollContent: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        paddingBottom: Spacing.xl,
+    },
 
     // ── Orbs de fondo ──
     orb: {
@@ -282,7 +355,6 @@ const styles = StyleSheet.create({
         top: -SCREEN_W * 0.3,
         left: -SCREEN_W * 0.2,
         backgroundColor: Colors.primaryDark,
-        // Blur simulado con opacidad en capas
         shadowColor: Colors.primary,
         shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 1,
@@ -318,68 +390,58 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         paddingHorizontal: Spacing.lg,
-        paddingBottom: Spacing.xl,
-        justifyContent: 'space-between',
+        justifyContent: 'center',
     },
 
     // ── Logo Section ──
     logoSection: {
         alignItems: 'center',
-        paddingTop: Spacing.xl,
+        marginBottom: Spacing.xl,
     },
     iconWrapper: {
-        marginBottom: Spacing.lg,
+        marginBottom: Spacing.md,
     },
     iconCard: {
-        width: 80,
-        height: 80,
+        width: 70,
+        height: 70,
         alignItems: 'center',
         justifyContent: 'center',
         padding: 0,
     },
     iconEmoji: {
-        fontSize: 42,
+        fontSize: 36,
         textAlign: 'center',
-        lineHeight: 80,
+        lineHeight: 70,
     },
     title: {
-        fontSize: FontSize.hero,
+        fontSize: FontSize.xxl * 1.5,
         fontFamily: FontFamily.drowner,
         color: Colors.textPrimary,
         letterSpacing: 8,
         textAlign: 'center',
-        // Glow rojo en el texto
         textShadowColor: Colors.primary,
         textShadowOffset: { width: 0, height: 0 },
         textShadowRadius: 20,
     },
     subtitle: {
-        fontSize: FontSize.display,
+        fontSize: FontSize.xl * 1.5,
         fontFamily: FontFamily.drowner,
         color: Colors.primaryLight,
         letterSpacing: 12,
         textAlign: 'center',
-        marginTop: -8,
+        marginTop: -Spacing.xs,
         textShadowColor: Colors.primaryLight,
         textShadowOffset: { width: 0, height: 0 },
         textShadowRadius: 15,
     },
-    tagline: {
-        fontSize: FontSize.sm,
-        fontFamily: FontFamily.inter,
-        color: Colors.textSecondary,
-        textAlign: 'center',
-        marginTop: Spacing.md,
-        letterSpacing: 0.5,
-    },
 
     // ── Login Card ──
     loginCard: {
-        padding: Spacing.xl,
-        marginVertical: Spacing.lg,
+        padding: Spacing.lg,
+        marginVertical: Spacing.md,
     },
     loginTitle: {
-        fontSize: FontSize.xl,
+        fontSize: FontSize.lg,
         fontFamily: FontFamily.interBold,
         color: Colors.textPrimary,
         textAlign: 'center',
@@ -391,7 +453,6 @@ const styles = StyleSheet.create({
         color: Colors.textSecondary,
         textAlign: 'center',
         marginBottom: Spacing.lg,
-        lineHeight: FontSize.sm * 1.6,
     },
 
     // ── Error ──
@@ -410,46 +471,52 @@ const styles = StyleSheet.create({
         fontFamily: FontFamily.inter,
     },
 
-    // ── Google Button ──
-    googleButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: Colors.white,
+    // ── Inputs ──
+    inputsWrapper: {
+        gap: Spacing.md,
+    },
+    input: {
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        borderRadius: Radius.md,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.1)',
+        paddingVertical: Spacing.md,
+        paddingHorizontal: Spacing.md,
+        color: Colors.textPrimary,
+        fontFamily: FontFamily.inter,
+        fontSize: FontSize.md,
+    },
+
+    // ── Buttons ──
+    primaryButton: {
+        backgroundColor: Colors.primary,
         borderRadius: Radius.md,
         paddingVertical: Spacing.md,
-        paddingHorizontal: Spacing.lg,
-        minHeight: 54,
-        // Glow rojo al presionar
+        alignItems: 'center',
+        justifyContent: 'center',
         shadowColor: Colors.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.4,
-        shadowRadius: 16,
-        elevation: 8,
-        gap: Spacing.sm,
+        shadowRadius: 10,
+        elevation: 6,
     },
-    googleButtonLoading: {
-        opacity: 0.8,
-    },
-    googleIconWrapper: {
-        width: 24,
-        height: 24,
-        borderRadius: Radius.full,
-        backgroundColor: '#4285F4',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    googleIconText: {
+    primaryButtonText: {
         color: Colors.white,
-        fontSize: 14,
-        fontWeight: '900',
-        lineHeight: 24,
-    },
-    googleButtonText: {
-        fontSize: FontSize.md,
         fontFamily: FontFamily.interBold,
-        color: '#1a1a1a',
-        letterSpacing: 0.3,
+        fontSize: FontSize.md,
+        letterSpacing: 2,
+    },
+    buttonLoading: {
+        opacity: 0.7,
+    },
+    modeToggle: {
+        marginTop: Spacing.md,
+        alignItems: 'center',
+    },
+    modeToggleText: {
+        color: Colors.textSecondary,
+        fontFamily: FontFamily.inter,
+        fontSize: FontSize.sm,
     },
 
     // ── Divider ──
@@ -462,39 +529,52 @@ const styles = StyleSheet.create({
     dividerLine: {
         flex: 1,
         height: 1,
-        backgroundColor: Colors.glassBorder,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
     },
     dividerText: {
+        color: Colors.textDisabled,
         fontSize: FontSize.xs,
         fontFamily: FontFamily.inter,
-        color: Colors.textDisabled,
-        letterSpacing: 0.5,
     },
 
-    // ── Features ──
-    features: {
+    // ── Google Button ──
+    googleButton: {
         flexDirection: 'row',
-        justifyContent: 'space-around',
-    },
-    featureItem: {
         alignItems: 'center',
-        gap: Spacing.xs,
+        justifyContent: 'center',
+        backgroundColor: Colors.white,
+        borderRadius: Radius.md,
+        paddingVertical: Spacing.md,
+        gap: Spacing.md,
     },
-    featureIcon: {
-        fontSize: 20,
+    googleIconWrapper: {
+        width: 24,
+        height: 24,
     },
-    featureText: {
-        fontSize: FontSize.xs,
-        fontFamily: FontFamily.inter,
-        color: Colors.textSecondary,
-        textAlign: 'center',
+    googleG: {
+        flex: 1,
+        backgroundColor: '#4285F4',
+        borderRadius: Radius.full,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    googleGText: {
+        color: Colors.white,
+        fontWeight: 'bold',
+        fontSize: 14,
+    },
+    googleButtonText: {
+        color: '#1a1a1a',
+        fontFamily: FontFamily.interBold,
+        fontSize: FontSize.md,
     },
 
     // ── Footer ──
     footer: {
+        textAlign: 'center',
+        color: Colors.textDisabled,
         fontSize: FontSize.xs,
         fontFamily: FontFamily.inter,
-        color: Colors.textDisabled,
-        textAlign: 'center',
+        marginTop: Spacing.lg,
     },
 });

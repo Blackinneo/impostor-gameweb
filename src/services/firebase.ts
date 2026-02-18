@@ -23,6 +23,9 @@ import {
     signInWithPopup,
     signInWithRedirect,
     getRedirectResult,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    updateProfile,
     signOut as firebaseSignOut,
     onAuthStateChanged,
     type User,
@@ -84,6 +87,28 @@ export async function signInWithGoogle(): Promise<User | null> {
         console.error('[Firebase] signInWithGoogle error:', error);
         throw error;
     }
+}
+
+/**
+ * Sign in with email and password.
+ * @param email - User email
+ * @param password - User password
+ */
+export async function signInWithEmail(email: string, password: string): Promise<User> {
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    return result.user;
+}
+
+/**
+ * Create a new account with email and password.
+ * @param email - User email
+ * @param password - User password
+ * @param displayName - User display name
+ */
+export async function signUpWithEmail(email: string, password: string, displayName: string): Promise<User> {
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(result.user, { displayName });
+    return result.user;
 }
 
 /**
