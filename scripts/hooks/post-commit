@@ -1,0 +1,22 @@
+#!/bin/sh
+# ─────────────────────────────────────────────────────────────────────────────
+# Git post-commit hook — Auto Push
+# Runs automatically after every `git commit`
+# ─────────────────────────────────────────────────────────────────────────────
+
+BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null)
+REMOTE="origin"
+
+echo ""
+echo "🚀 [auto-push] Pushing '$BRANCH' to $REMOTE..."
+
+git push "$REMOTE" "$BRANCH"
+
+if [ $? -eq 0 ]; then
+  echo "✅ [auto-push] Push exitoso → $REMOTE/$BRANCH"
+else
+  echo "❌ [auto-push] Push falló. Revisá tu conexión o credenciales."
+  echo "   Podés hacer push manual con: git push $REMOTE $BRANCH"
+fi
+
+echo ""
