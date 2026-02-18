@@ -1,7 +1,7 @@
 /**
  * @file src/screens/LoginScreen.tsx
- * @description Pantalla de Login/Register — Identidad Visual Impostor GameWeb.
- * Glassmorphism + fondo rojo/negro + animaciones premium + fuente DROWNER.
+ * @description Pantalla de Login/Register — PREMIUM Glassmorphic & Motion Design.
+ * Sigue estrictamente la identidad visual "Blood & Glass".
  */
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -28,9 +28,51 @@ import { Colors, FontFamily, FontSize, Spacing, Radius, Duration } from '@consta
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 
 /**
- * Pantalla principal de autenticación.
- * Gestiona Login y Registro con Google o Email/Password.
+ * Componente para el efecto de revelado "escaneo" del título DROWNER.
  */
+const DrownerReveal: React.FC<{ text: string; style?: any }> = ({ text, style }) => {
+    const animatedValues = useRef(text.split('').map(() => new Animated.Value(0))).current;
+
+    useEffect(() => {
+        const animations = animatedValues.map((anim, i) => {
+            return Animated.timing(anim, {
+                toValue: 1,
+                duration: 400,
+                delay: i * 100,
+                easing: Easing.out(Easing.cubic),
+                useNativeDriver: true,
+            });
+        });
+        Animated.stagger(50, animations).start();
+    }, []);
+
+    return (
+        <View style={[styles.revealContainer, style]}>
+            {text.split('').map((char, i) => (
+                <Animated.Text
+                    key={i}
+                    style={[
+                        styles.drownerChar,
+                        {
+                            opacity: animatedValues[i],
+                            transform: [
+                                {
+                                    translateY: animatedValues[i].interpolate({
+                                        inputRange: [0, 1],
+                                        outputRange: [10, 0],
+                                    }),
+                                },
+                            ],
+                        },
+                    ]}
+                >
+                    {char}
+                </Animated.Text>
+            ))}
+        </View>
+    );
+};
+
 export const LoginScreen: React.FC = () => {
     const {
         loginWithGoogle,
@@ -49,93 +91,65 @@ export const LoginScreen: React.FC = () => {
 
     // ── Animaciones ──────────────────────────────
     const fadeAnim = useRef(new Animated.Value(0)).current;
-    const slideAnim = useRef(new Animated.Value(40)).current;
-    const glowAnim = useRef(new Animated.Value(0.4)).current;
-    const pulseAnim = useRef(new Animated.Value(1)).current;
-    const orb1Anim = useRef(new Animated.Value(0)).current;
-    const orb2Anim = useRef(new Animated.Value(0)).current;
+    const slideAnim = useRef(new Animated.Value(30)).current;
+    const glowIntensity = useRef(new Animated.Value(0)).current;
 
-    // Reveal de entrada
+    // Background Orbs
+    const orb1Pos = useRef(new Animated.ValueXY({ x: -SCREEN_W * 0.2, y: -SCREEN_H * 0.1 })).current;
+    const orb2Pos = useRef(new Animated.ValueXY({ x: SCREEN_W * 0.5, y: SCREEN_H * 0.6 })).current;
+
     useEffect(() => {
-        Animated.sequence([
-            Animated.delay(200),
-            Animated.parallel([
-                Animated.timing(fadeAnim, {
-                    toValue: 1,
-                    duration: Duration.reveal,
-                    easing: Easing.out(Easing.cubic),
-                    useNativeDriver: true,
-                }),
-                Animated.timing(slideAnim, {
-                    toValue: 0,
-                    duration: Duration.reveal,
-                    easing: Easing.out(Easing.cubic),
-                    useNativeDriver: true,
-                }),
-            ]),
+        // Entrada suave
+        Animated.parallel([
+            Animated.timing(fadeAnim, {
+                toValue: 1,
+                duration: 800,
+                useNativeDriver: true,
+            }),
+            Animated.timing(slideAnim, {
+                toValue: 0,
+                duration: 800,
+                easing: Easing.out(Easing.back(1.5)),
+                useNativeDriver: true,
+            }),
         ]).start();
 
-        // Glow pulsante del fondo
-        Animated.loop(
-            Animated.sequence([
-                Animated.timing(glowAnim, {
-                    toValue: 0.8,
-                    duration: 3000,
-                    easing: Easing.inOut(Easing.sin),
-                    useNativeDriver: true,
-                }),
-                Animated.timing(glowAnim, {
-                    toValue: 0.4,
-                    duration: 3000,
-                    easing: Easing.inOut(Easing.sin),
-                    useNativeDriver: true,
-                }),
-            ])
-        ).start();
+        // Animación de orbs (Efecto Floating)
+        const animateOrb = (pos: Animated.ValueXY, toX: number, toY: number, duration: number) => {
+            Animated.loop(
+                Animated.sequence([
+                    Animated.timing(pos, {
+                        toValue: { x: toX, y: toY },
+                        duration,
+                        easing: Easing.inOut(Easing.sin),
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(pos, {
+                        toValue: { x: -toX * 0.5, y: -toY * 0.5 },
+                        duration,
+                        easing: Easing.inOut(Easing.sin),
+                        useNativeDriver: true,
+                    }),
+                ])
+            ).start();
+        };
 
-        // Orbs flotantes
-        Animated.loop(
-            Animated.sequence([
-                Animated.timing(orb1Anim, {
-                    toValue: -20,
-                    duration: 4000,
-                    easing: Easing.inOut(Easing.sin),
-                    useNativeDriver: true,
-                }),
-                Animated.timing(orb1Anim, {
-                    toValue: 20,
-                    duration: 4000,
-                    easing: Easing.inOut(Easing.sin),
-                    useNativeDriver: true,
-                }),
-            ])
-        ).start();
-
-        Animated.loop(
-            Animated.sequence([
-                Animated.timing(orb2Anim, {
-                    toValue: 15,
-                    duration: 5000,
-                    easing: Easing.inOut(Easing.sin),
-                    useNativeDriver: true,
-                }),
-                Animated.timing(orb2Anim, {
-                    toValue: -15,
-                    duration: 5000,
-                    easing: Easing.inOut(Easing.sin),
-                    useNativeDriver: true,
-                }),
-            ])
-        ).start();
+        animateOrb(orb1Pos, 20, 30, 6000);
+        animateOrb(orb2Pos, -30, -20, 8000);
     }, []);
 
     const toggleMode = () => {
-        const nextMode = mode === 'login' ? 'register' : 'login';
+        setMode(prev => prev === 'login' ? 'register' : 'login');
         clearError();
-        setMode(nextMode);
     };
 
     const handleAuth = async () => {
+        // Al presionar, intensificamos el resplandor momentáneamente
+        Animated.sequence([
+            Animated.timing(glowIntensity, { toValue: 1, duration: 200, useNativeDriver: true }),
+            Animated.timing(glowIntensity, { toValue: 0, duration: 400, useNativeDriver: true }),
+        ]).start();
+
         if (mode === 'login') {
             await loginWithEmail(email, password);
         } else {
@@ -143,184 +157,168 @@ export const LoginScreen: React.FC = () => {
         }
     };
 
-    // Pulse del botón al presionar
-    const handlePressIn = () => {
-        Animated.spring(pulseAnim, {
-            toValue: 0.96,
-            useNativeDriver: true,
-        }).start();
-    };
-
-    const handlePressOut = () => {
-        Animated.spring(pulseAnim, {
-            toValue: 1,
-            friction: 3,
-            useNativeDriver: true,
-        }).start();
-    };
-
     return (
         <SafeAreaView style={styles.safe}>
-            <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
+            <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-            {/* ── Fondo: orbs rojos animados ── */}
-            <View style={StyleSheet.absoluteFill} pointerEvents="none">
+            {/* ── Background: Blood & Glass DNA ── */}
+            <View style={styles.bgContainer}>
+                <View style={styles.blackBase} />
+
+                {/* Glow Central */}
                 <Animated.View
                     style={[
-                        styles.orb,
-                        styles.orbMain,
-                        { opacity: glowAnim, transform: [{ translateY: orb1Anim }] },
+                        styles.centralGlow,
+                        {
+                            opacity: glowIntensity.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0.15, 0.4],
+                            }),
+                        }
                     ]}
                 />
+
+                {/* Orb 1: Dark Blood */}
                 <Animated.View
                     style={[
                         styles.orb,
-                        styles.orbSecondary,
-                        { opacity: glowAnim, transform: [{ translateY: orb2Anim }] },
+                        styles.orb1,
+                        { transform: orb1Pos.getTranslateTransform() }
                     ]}
                 />
+
+                {/* Orb 2: Vibrant Red */}
                 <Animated.View
                     style={[
                         styles.orb,
-                        styles.orbTertiary,
-                        { opacity: glowAnim },
+                        styles.orb2,
+                        { transform: orb2Pos.getTranslateTransform() }
                     ]}
                 />
             </View>
 
             <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={{ flex: 1 }}
             >
                 <ScrollView
-                    contentContainerStyle={styles.scrollContent}
-                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={styles.scroll}
                     showsVerticalScrollIndicator={false}
+                    bounces={false}
                 >
-                    {/* ── Contenido principal ── */}
                     <Animated.View
                         style={[
-                            styles.container,
+                            styles.content,
                             {
                                 opacity: fadeAnim,
                                 transform: [{ translateY: slideAnim }],
                             },
                         ]}
                     >
-                        {/* ── Logo / Título ── */}
-                        <View style={styles.logoSection}>
-                            <View style={styles.iconWrapper}>
-                                <GlassCard intensity="strong" style={styles.iconCard}>
-                                    <Text style={styles.iconEmoji}>🕵️</Text>
-                                </GlassCard>
-                            </View>
-
-                            <Text style={styles.title}>IMPOSTOR</Text>
-                            <Text style={styles.subtitle}>GAME</Text>
+                        {/* Header Section */}
+                        <View style={styles.header}>
+                            <DrownerReveal text="IMPOSTOR" style={styles.title} />
+                            <Text style={styles.subtitle}>GAME SESSION</Text>
                         </View>
 
-                        {/* ── Card de Auth ── */}
-                        <GlassCard intensity="medium" style={styles.loginCard}>
-                            <Text style={styles.loginTitle}>
-                                {mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}
-                            </Text>
-                            <Text style={styles.loginDesc}>
-                                {mode === 'login'
-                                    ? 'Entrá para descubrir al impostor'
-                                    : 'Unite a la partida secreta'}
-                            </Text>
-
-                            {/* Error */}
-                            {error ? (
-                                <View style={styles.errorBadge}>
-                                    <Text style={styles.errorText}>⚠️ {error}</Text>
-                                </View>
-                            ) : null}
-
-                            {/* Inputs */}
-                            <View style={styles.inputsWrapper}>
-                                {mode === 'register' && (
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Nombre de Jugador"
-                                        placeholderTextColor={Colors.textDisabled}
-                                        value={displayName}
-                                        onChangeText={setDisplayName}
-                                        autoCapitalize="words"
-                                    />
-                                )}
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Email"
-                                    placeholderTextColor={Colors.textDisabled}
-                                    value={email}
-                                    onChangeText={setEmail}
-                                    keyboardType="email-address"
-                                    autoCapitalize="none"
-                                />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Contraseña"
-                                    placeholderTextColor={Colors.textDisabled}
-                                    value={password}
-                                    onChangeText={setPassword}
-                                    secureTextEntry
-                                />
+                        {/* Main Glass Card */}
+                        <GlassCard intensity="medium" style={styles.card}>
+                            <View style={styles.cardHeader}>
+                                <Text style={styles.cardTitle}>
+                                    {mode === 'login' ? 'BIENVENIDO' : 'UNIRSE'}
+                                </Text>
+                                <View style={styles.accentLine} />
                             </View>
 
-                            {/* Botón Principal */}
-                            <Animated.View style={{ transform: [{ scale: pulseAnim }], marginTop: Spacing.md }}>
-                                <TouchableOpacity
-                                    style={[styles.primaryButton, actionLoading && styles.buttonLoading]}
-                                    onPress={handleAuth}
-                                    onPressIn={handlePressIn}
-                                    onPressOut={handlePressOut}
-                                    disabled={actionLoading}
-                                    activeOpacity={1}
-                                >
-                                    {actionLoading ? (
-                                        <ActivityIndicator color={Colors.white} size="small" />
-                                    ) : (
-                                        <Text style={styles.primaryButtonText}>
-                                            {mode === 'login' ? 'ENTRAR' : 'REGISTRARME'}
-                                        </Text>
-                                    )}
-                                </TouchableOpacity>
-                            </Animated.View>
+                            {error && (
+                                <View style={styles.errorBox}>
+                                    <Text style={styles.errorText}>⚡ {error}</Text>
+                                </View>
+                            )}
 
-                            <TouchableOpacity onPress={toggleMode} style={styles.modeToggle}>
-                                <Text style={styles.modeToggleText}>
+                            <View style={styles.form}>
+                                {mode === 'register' && (
+                                    <View style={styles.inputContainer}>
+                                        <Text style={styles.label}>NICKNAME</Text>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Tu nombre de código..."
+                                            placeholderTextColor="rgba(255,255,255,0.3)"
+                                            value={displayName}
+                                            onChangeText={setDisplayName}
+                                        />
+                                    </View>
+                                )}
+
+                                <View style={styles.inputContainer}>
+                                    <Text style={styles.label}>EMAIL</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="agente@impostor.com"
+                                        placeholderTextColor="rgba(255,255,255,0.3)"
+                                        value={email}
+                                        onChangeText={setEmail}
+                                        autoCapitalize="none"
+                                        keyboardType="email-address"
+                                    />
+                                </View>
+
+                                <View style={styles.inputContainer}>
+                                    <Text style={styles.label}>PASSWORD</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="••••••••"
+                                        placeholderTextColor="rgba(255,255,255,0.3)"
+                                        value={password}
+                                        onChangeText={setPassword}
+                                        secureTextEntry
+                                    />
+                                </View>
+                            </View>
+
+                            {/* Auth Button */}
+                            <TouchableOpacity
+                                style={styles.button}
+                                activeOpacity={0.8}
+                                onPress={handleAuth}
+                                disabled={actionLoading}
+                            >
+                                {actionLoading ? (
+                                    <ActivityIndicator color={Colors.white} />
+                                ) : (
+                                    <Text style={styles.buttonText}>
+                                        {mode === 'login' ? 'INICIAR MISIÓN' : 'COMPLETAR REGISTRO'}
+                                    </Text>
+                                )}
+                            </TouchableOpacity>
+
+                            <TouchableOpacity onPress={toggleMode} style={styles.toggle}>
+                                <Text style={styles.toggleText}>
                                     {mode === 'login'
-                                        ? '¿No tenés cuenta? Registrate'
-                                        : '¿Ya tenés cuenta? Iniciá sesión'}
+                                        ? '¿NUEVO AGENTE? CREAR CUENTA'
+                                        : '¿YA TIENES ACCESO? LOGUEARSE'}
                                 </Text>
                             </TouchableOpacity>
 
                             {/* Divider */}
                             <View style={styles.divider}>
-                                <View style={styles.dividerLine} />
-                                <Text style={styles.dividerText}>o también</Text>
-                                <View style={styles.dividerLine} />
+                                <View style={styles.line} />
+                                <Text style={styles.dividerText}>SECURE ACCESS</Text>
+                                <View style={styles.line} />
                             </View>
 
-                            {/* Botón Google */}
+                            {/* Google Button */}
                             <TouchableOpacity
-                                style={styles.googleButton}
+                                style={styles.googleBtn}
                                 onPress={loginWithGoogle}
                                 disabled={actionLoading}
                             >
-                                <View style={styles.googleIconWrapper}>
-                                    <View style={styles.googleG}>
-                                        <Text style={styles.googleGText}>G</Text>
-                                    </View>
-                                </View>
-                                <Text style={styles.googleButtonText}>Continuar con Google</Text>
+                                <Text style={styles.googleText}>CONTINUAR CON GOOGLE</Text>
                             </TouchableOpacity>
                         </GlassCard>
 
-                        {/* ── Footer ── */}
-                        <Text style={styles.footer}>
-                            Hecho con ❤️ por el equipo de Impostor
+                        <Text style={styles.footerText}>
+                            SISTEMA ENCRIPTADO © 2026 IMPOSTOR LABS
                         </Text>
                     </Animated.View>
                 </ScrollView>
@@ -329,252 +327,202 @@ export const LoginScreen: React.FC = () => {
     );
 };
 
-// ─────────────────────────────────────────────
-// Styles
-// ─────────────────────────────────────────────
-
 const styles = StyleSheet.create({
     safe: {
         flex: 1,
         backgroundColor: Colors.background,
     },
-    scrollContent: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        paddingBottom: Spacing.xl,
+    bgContainer: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: Colors.background,
     },
-
-    // ── Orbs de fondo ──
+    blackBase: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: '#000000',
+    },
+    centralGlow: {
+        position: 'absolute',
+        width: SCREEN_W * 1.5,
+        height: SCREEN_W * 1.5,
+        borderRadius: Radius.full,
+        backgroundColor: Colors.primary,
+        top: SCREEN_H * 0.1,
+        left: -SCREEN_W * 0.25,
+        opacity: 0.15,
+        transform: [{ scale: 1.2 }],
+    },
     orb: {
         position: 'absolute',
         borderRadius: Radius.full,
     },
-    orbMain: {
-        width: SCREEN_W * 0.9,
-        height: SCREEN_W * 0.9,
-        top: -SCREEN_W * 0.3,
-        left: -SCREEN_W * 0.2,
-        backgroundColor: Colors.primaryDark,
-        shadowColor: Colors.primary,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 1,
-        shadowRadius: 80,
-        elevation: 0,
+    orb1: {
+        width: SCREEN_W * 0.8,
+        height: SCREEN_W * 0.8,
+        backgroundColor: '#3c0000',
+        top: -100,
+        left: -50,
+        opacity: 0.6,
     },
-    orbSecondary: {
-        width: SCREEN_W * 0.7,
-        height: SCREEN_W * 0.7,
-        bottom: SCREEN_H * 0.05,
-        right: -SCREEN_W * 0.2,
-        backgroundColor: '#2a0000',
-        shadowColor: Colors.primary,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.8,
-        shadowRadius: 60,
-        elevation: 0,
+    orb2: {
+        width: SCREEN_W * 0.6,
+        height: SCREEN_W * 0.6,
+        backgroundColor: Colors.primary,
+        bottom: 100,
+        right: -50,
+        opacity: 0.3,
     },
-    orbTertiary: {
-        width: SCREEN_W * 0.4,
-        height: SCREEN_W * 0.4,
-        top: SCREEN_H * 0.35,
-        left: -SCREEN_W * 0.1,
-        backgroundColor: '#1a0000',
-        shadowColor: Colors.primaryLight,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.5,
-        shadowRadius: 40,
-        elevation: 0,
-    },
-
-    // ── Layout ──
-    container: {
-        flex: 1,
-        paddingHorizontal: Spacing.lg,
+    scroll: {
+        flexGrow: 1,
         justifyContent: 'center',
+        paddingVertical: Spacing.xl,
     },
-
-    // ── Logo Section ──
-    logoSection: {
+    content: {
+        paddingHorizontal: Spacing.lg,
+    },
+    header: {
         alignItems: 'center',
         marginBottom: Spacing.xl,
     },
-    iconWrapper: {
-        marginBottom: Spacing.md,
+    revealContainer: {
+        flexDirection: 'row',
     },
-    iconCard: {
-        width: 70,
-        height: 70,
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 0,
-    },
-    iconEmoji: {
-        fontSize: 36,
-        textAlign: 'center',
-        lineHeight: 70,
-    },
-    title: {
-        fontSize: FontSize.xxl * 1.5,
+    drownerChar: {
+        fontSize: 52,
         fontFamily: FontFamily.drowner,
         color: Colors.textPrimary,
-        letterSpacing: 8,
-        textAlign: 'center',
         textShadowColor: Colors.primary,
-        textShadowOffset: { width: 0, height: 0 },
-        textShadowRadius: 20,
-    },
-    subtitle: {
-        fontSize: FontSize.xl * 1.5,
-        fontFamily: FontFamily.drowner,
-        color: Colors.primaryLight,
-        letterSpacing: 12,
-        textAlign: 'center',
-        marginTop: -Spacing.xs,
-        textShadowColor: Colors.primaryLight,
         textShadowOffset: { width: 0, height: 0 },
         textShadowRadius: 15,
     },
-
-    // ── Login Card ──
-    loginCard: {
-        padding: Spacing.lg,
-        marginVertical: Spacing.md,
+    title: {
+        marginBottom: -Spacing.xs,
     },
-    loginTitle: {
-        fontSize: FontSize.lg,
-        fontFamily: FontFamily.interBold,
-        color: Colors.textPrimary,
-        textAlign: 'center',
-        marginBottom: Spacing.xs,
-    },
-    loginDesc: {
+    subtitle: {
         fontSize: FontSize.sm,
-        fontFamily: FontFamily.inter,
-        color: Colors.textSecondary,
-        textAlign: 'center',
+        fontFamily: FontFamily.interBold,
+        color: Colors.primaryLight,
+        letterSpacing: 4,
+        marginTop: Spacing.xs,
+    },
+    card: {
+        padding: Spacing.lg,
+        borderRadius: 24,
+    },
+    cardHeader: {
         marginBottom: Spacing.lg,
     },
-
-    // ── Error ──
-    errorBadge: {
-        backgroundColor: 'rgba(255, 68, 68, 0.15)',
-        borderRadius: Radius.sm,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 68, 68, 0.3)',
-        padding: Spacing.sm,
-        marginBottom: Spacing.md,
+    cardTitle: {
+        fontSize: FontSize.lg,
+        fontFamily: FontFamily.interBold,
+        color: Colors.white,
+        letterSpacing: 2,
     },
-    errorText: {
-        color: Colors.error,
-        fontSize: FontSize.sm,
-        textAlign: 'center',
-        fontFamily: FontFamily.inter,
+    accentLine: {
+        width: 40,
+        height: 3,
+        backgroundColor: Colors.primary,
+        marginTop: 4,
     },
-
-    // ── Inputs ──
-    inputsWrapper: {
-        gap: Spacing.md,
-    },
-    input: {
-        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    errorBox: {
+        backgroundColor: 'rgba(150, 0, 24, 0.15)',
+        padding: Spacing.md,
         borderRadius: Radius.md,
         borderWidth: 1,
+        borderColor: 'rgba(150, 0, 24, 0.3)',
+        marginBottom: Spacing.lg,
+    },
+    errorText: {
+        color: Colors.primaryLight,
+        fontSize: FontSize.sm,
+        fontFamily: FontFamily.inter,
+    },
+    form: {
+        gap: Spacing.lg,
+        marginBottom: Spacing.xl,
+    },
+    inputContainer: {
+        gap: 8,
+    },
+    label: {
+        fontSize: 10,
+        fontFamily: FontFamily.interBold,
+        color: Colors.textSecondary,
+        letterSpacing: 1.5,
+    },
+    input: {
+        backgroundColor: 'rgba(255, 255, 255, 0.03)',
+        borderWidth: 1,
         borderColor: 'rgba(255, 255, 255, 0.1)',
-        paddingVertical: Spacing.md,
-        paddingHorizontal: Spacing.md,
-        color: Colors.textPrimary,
+        borderRadius: Radius.md,
+        paddingVertical: 14,
+        paddingHorizontal: 16,
+        color: Colors.white,
         fontFamily: FontFamily.inter,
         fontSize: FontSize.md,
     },
-
-    // ── Buttons ──
-    primaryButton: {
+    button: {
         backgroundColor: Colors.primary,
+        paddingVertical: 16,
         borderRadius: Radius.md,
-        paddingVertical: Spacing.md,
         alignItems: 'center',
-        justifyContent: 'center',
         shadowColor: Colors.primary,
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4,
-        shadowRadius: 10,
-        elevation: 6,
+        shadowOpacity: 0.5,
+        shadowRadius: 12,
+        elevation: 8,
     },
-    primaryButtonText: {
+    buttonText: {
         color: Colors.white,
         fontFamily: FontFamily.interBold,
         fontSize: FontSize.md,
-        letterSpacing: 2,
+        letterSpacing: 1.5,
     },
-    buttonLoading: {
-        opacity: 0.7,
-    },
-    modeToggle: {
-        marginTop: Spacing.md,
+    toggle: {
+        marginTop: Spacing.lg,
         alignItems: 'center',
     },
-    modeToggleText: {
-        color: Colors.textSecondary,
-        fontFamily: FontFamily.inter,
-        fontSize: FontSize.sm,
+    toggleText: {
+        color: 'rgba(255, 255, 255, 0.5)',
+        fontSize: 11,
+        fontFamily: FontFamily.interBold,
+        letterSpacing: 1,
     },
-
-    // ── Divider ──
     divider: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginVertical: Spacing.lg,
-        gap: Spacing.sm,
-    },
-    dividerLine: {
-        flex: 1,
-        height: 1,
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    },
-    dividerText: {
-        color: Colors.textDisabled,
-        fontSize: FontSize.xs,
-        fontFamily: FontFamily.inter,
-    },
-
-    // ── Google Button ──
-    googleButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: Colors.white,
-        borderRadius: Radius.md,
-        paddingVertical: Spacing.md,
+        marginVertical: Spacing.xl,
         gap: Spacing.md,
     },
-    googleIconWrapper: {
-        width: 24,
-        height: 24,
-    },
-    googleG: {
+    line: {
         flex: 1,
-        backgroundColor: '#4285F4',
-        borderRadius: Radius.full,
-        alignItems: 'center',
-        justifyContent: 'center',
+        height: 1,
+        backgroundColor: 'rgba(255, 255, 255, 0.08)',
     },
-    googleGText: {
-        color: Colors.white,
-        fontWeight: 'bold',
-        fontSize: 14,
-    },
-    googleButtonText: {
-        color: '#1a1a1a',
+    dividerText: {
+        fontSize: 9,
         fontFamily: FontFamily.interBold,
-        fontSize: FontSize.md,
+        color: 'rgba(255, 255, 255, 0.3)',
+        letterSpacing: 2,
     },
-
-    // ── Footer ──
-    footer: {
+    googleBtn: {
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+        paddingVertical: 14,
+        borderRadius: Radius.md,
+        alignItems: 'center',
+    },
+    googleText: {
+        color: Colors.white,
+        fontFamily: FontFamily.interBold,
+        fontSize: 12,
+        letterSpacing: 1,
+    },
+    footerText: {
         textAlign: 'center',
-        color: Colors.textDisabled,
-        fontSize: FontSize.xs,
+        color: 'rgba(255, 255, 255, 0.2)',
+        fontSize: 10,
         fontFamily: FontFamily.inter,
-        marginTop: Spacing.lg,
+        marginTop: Spacing.xxl,
+        letterSpacing: 1,
     },
 });
