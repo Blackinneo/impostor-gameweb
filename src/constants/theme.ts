@@ -1,45 +1,45 @@
 /**
  * @file src/constants/theme.ts
- * @description Design system tokens for Impostor GameWeb.
- * Follows Apple HIG and Material Design 3 principles.
- * All UI components should reference these values — never hardcode styles.
+ * @description Design system — Impostor GameWeb Brand DNA
+ * Paleta: Negro absoluto + Rojo Sangre + Glassmorphism
  */
 
 // ─────────────────────────────────────────────
-// Color Palette
+// Brand Color Palette
 // ─────────────────────────────────────────────
 
 export const Colors = {
-    // Brand
-    primary: '#6C63FF',       // Electric violet — main accent
-    primaryDark: '#4B44CC',
-    primaryLight: '#9D97FF',
-
-    secondary: '#FF6584',     // Coral pink — secondary accent
-    secondaryDark: '#CC4D67',
+    // Brand Reds
+    primary: '#960018',          // Rojo Vibrante
+    primaryDark: '#3c0000',      // Rojo Sangre Oscuro
+    primaryLight: '#ff8478',     // Coral Suave
+    primaryGlow: 'rgba(150, 0, 24, 0.6)',
 
     // Backgrounds
-    background: '#0D0D1A',    // Deep space dark
-    surface: '#1A1A2E',       // Card / surface
-    surfaceElevated: '#252540',
+    background: '#000000',       // Negro absoluto
+    backgroundDeep: '#0a0000',
+    surface: 'rgba(255, 255, 255, 0.05)',   // Glass surface
+    surfaceElevated: 'rgba(255, 255, 255, 0.08)',
+
+    // Glass borders
+    glassBorder: 'rgba(255, 255, 255, 0.12)',
+    glassBorderTop: 'rgba(255, 255, 255, 0.2)',
 
     // Text
-    textPrimary: '#F0F0FF',
-    textSecondary: '#A0A0C0',
-    textDisabled: '#555570',
+    textPrimary: '#FFFFFF',
+    textSecondary: 'rgba(255, 255, 255, 0.6)',
+    textDisabled: 'rgba(255, 255, 255, 0.3)',
 
     // Semantic
     success: '#4CAF50',
-    warning: '#FFC107',
-    error: '#F44336',
-    info: '#2196F3',
+    error: '#FF4444',
+    google: '#FFFFFF',
 
     // Utility
-    border: '#2E2E4A',
-    overlay: 'rgba(0, 0, 0, 0.6)',
     transparent: 'transparent',
     white: '#FFFFFF',
     black: '#000000',
+    overlay: 'rgba(0,0,0,0.7)',
 } as const;
 
 // ─────────────────────────────────────────────
@@ -47,9 +47,10 @@ export const Colors = {
 // ─────────────────────────────────────────────
 
 export const FontFamily = {
-    regular: 'System',
-    medium: 'System',
-    bold: 'System',
+    drowner: 'Drowner',          // Display / Títulos
+    inter: 'Inter_400Regular',
+    interMedium: 'Inter_500Medium',
+    interBold: 'Inter_700Bold',
     mono: 'monospace',
 } as const;
 
@@ -59,15 +60,9 @@ export const FontSize = {
     md: 15,
     lg: 17,
     xl: 20,
-    xxl: 24,
-    display: 32,
-    hero: 40,
-} as const;
-
-export const LineHeight = {
-    tight: 1.2,
-    normal: 1.5,
-    relaxed: 1.75,
+    xxl: 28,
+    display: 40,
+    hero: 56,
 } as const;
 
 // ─────────────────────────────────────────────
@@ -89,38 +84,38 @@ export const Spacing = {
 // ─────────────────────────────────────────────
 
 export const Radius = {
-    sm: 6,
-    md: 12,
-    lg: 20,
-    xl: 28,
+    sm: 8,
+    md: 14,
+    lg: 22,
+    xl: 32,
     full: 9999,
 } as const;
 
 // ─────────────────────────────────────────────
-// Shadows
+// Shadows / Glows
 // ─────────────────────────────────────────────
 
 export const Shadow = {
     sm: {
-        shadowColor: Colors.black,
+        shadowColor: Colors.primary,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 4,
-        elevation: 2,
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 4,
     },
     md: {
         shadowColor: Colors.primary,
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.25,
-        shadowRadius: 12,
-        elevation: 6,
+        shadowOpacity: 0.45,
+        shadowRadius: 16,
+        elevation: 8,
     },
     lg: {
         shadowColor: Colors.primary,
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.35,
-        shadowRadius: 20,
-        elevation: 12,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.7,
+        shadowRadius: 30,
+        elevation: 16,
     },
 } as const;
 
@@ -131,5 +126,6 @@ export const Shadow = {
 export const Duration = {
     fast: 150,
     normal: 300,
-    slow: 500,
+    slow: 600,
+    reveal: 1200,
 } as const;

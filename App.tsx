@@ -1,24 +1,39 @@
 /**
  * @file App.tsx
- * @description Root application component for Impostor GameWeb.
- * Handles auth state and renders the appropriate screen.
+ * @description Root — carga fuentes, gestiona sesión Firebase y enruta pantallas.
  */
 
 import React from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { useAuth } from '@hooks/useAuth';
+import { useFonts } from 'expo-font';
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
+import { useFirebaseAuth } from '@hooks/useFirebaseAuth';
+import { LoginScreen } from '@screens/LoginScreen';
 import { HomeScreen } from '@screens/HomeScreen';
-import { AuthScreen } from '@screens/AuthScreen';
 import { Colors } from '@constants/theme';
 
 /**
- * Root component — shows a loading spinner while auth initializes,
- * then routes to HomeScreen (authenticated) or AuthScreen (guest).
+ * Root component.
+ * 1. Carga fuentes (Drowner + Inter)
+ * 2. Verifica sesión Firebase
+ * 3. Muestra LoginScreen o HomeScreen según estado
  */
 export default function App() {
-  const { user, loading } = useAuth();
+  const [fontsLoaded] = useFonts({
+    Drowner: require('./Drowner - Free Version by Hainz Studio/Drowner - Free Version/OpenType-PS/Drowner-Free.otf'),
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_700Bold,
+  });
 
-  if (loading) {
+  const { user, loading } = useFirebaseAuth();
+
+  // Mostrar spinner mientras cargan fuentes o se verifica sesión
+  if (!fontsLoaded || loading) {
     return (
       <View style={styles.loader}>
         <ActivityIndicator size="large" color={Colors.primary} />
@@ -26,7 +41,7 @@ export default function App() {
     );
   }
 
-  return user ? <HomeScreen /> : <AuthScreen />;
+  return user ? <HomeScreen /> : <LoginScreen />;
 }
 
 const styles = StyleSheet.create({

@@ -1,11 +1,10 @@
-const { getSentryExpoConfig } = require('@expo/metro-config');
-
-/** @type {import('expo/metro-config').MetroConfig} */
-const config = getSentryExpoConfig ? getSentryExpoConfig(__dirname) : require('expo/metro-config').getDefaultConfig(__dirname);
-
-// ── Path aliases (must match tsconfig.json paths) ──────────────────────────
+const { getDefaultConfig } = require('expo/metro-config');
 const path = require('path');
 
+/** @type {import('expo/metro-config').MetroConfig} */
+const config = getDefaultConfig(__dirname);
+
+// ── Path aliases (must match tsconfig.json paths) ──────────────────────────
 config.resolver.alias = {
     '@components': path.resolve(__dirname, 'src/components'),
     '@screens': path.resolve(__dirname, 'src/screens'),
